@@ -138,7 +138,7 @@ const tailwindPlugin = async (eleventyConfig, options = {}) => {
   // Add the entry to the watch list
   eleventyConfig.addWatchTarget(options.entry);
 
-  eleventyConfig.on("before", (changedFiles) => {
+  eleventyConfig.on("eleventy.beforeWatch", (changedFiles) => {
 
     const tailwindConfig = getTailwindConfig(options);
     const purgeOptions = tailwindConfig.purge || tailwindConfig.content || [];
