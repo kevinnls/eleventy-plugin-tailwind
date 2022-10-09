@@ -1,5 +1,5 @@
 {
-  "name": "@jamshop/eleventy-plugin-tailwind",
+  "name": "@kevinnls/eleventy-plugin-tailwind",
   "version": "1.3.0",
   "main": "index.js",
   "license": "MIT",
