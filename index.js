@@ -7,7 +7,6 @@ const path = require("path");
 const { readFileSync, outputFileSync, existsSync } = require("fs-extra");
 const CSSErrorOverlay = require("./errorOverlay");
 
-let CSSDeps = [];
 let tailwindConfigFile = {};
 const file = path.join(process.cwd(), "./tailwind.config.js");
 
@@ -35,7 +34,7 @@ const getTailwindConfig = ({ inputDir, tailwindConfig = {} }) => {
     ...tailwindConfig,
   };
 
-  if (!config.purge && !config.content) {
+  if (!config.content) {
     return {
       content: [
         `${inputDir}/**/*.html`,
@@ -57,15 +56,6 @@ const getTailwindConfig = ({ inputDir, tailwindConfig = {} }) => {
   return config;
 };
 
-// Add a function to add new @imports found when compiling CSS
-const trackCSSDeps = (newCSSDeps) => {
-  newCSSDeps
-    .filter((dep) => !CSSDeps.includes(dep))
-    .forEach((dep) => {
-      CSSDeps = [...CSSDeps, pathRel(dep)];
-    });
-};
-
 const compileTailwind = async (options) => {
   const tailwindConfig = getTailwindConfig(options);
   let result;
@@ -80,15 +70,6 @@ const compileTailwind = async (options) => {
     result.warnings().forEach((message) => {
       console.log(message.toString());
     });
-
-    const imports = result.messages
-      .filter(
-        (message) =>
-          message.type === "dependency" && message.plugin === "postcss-import"
-      )
-      .map((imp) => imp.file);
-
-    trackCSSDeps(imports);
   } catch (error) {
     result = {
       error: error.message,
