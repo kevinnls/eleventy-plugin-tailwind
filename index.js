@@ -2,7 +2,6 @@ const tailwindcss = require("tailwindcss");
 const atImport = require("postcss-import");
 const postcss = require("postcss");
 const CleanCSS = require("clean-css");
-const minimatch = require("minimatch");
 require("css.escape");
 const path = require("path");
 const { readFileSync, outputFileSync, existsSync } = require("fs-extra");
@@ -32,17 +31,13 @@ const minifyCSS = (css) => {
 
 const getTailwindConfig = ({ inputDir, tailwindConfig = {} }) => {
   const config = {
-    mode: "jit",
     ...tailwindConfigFile,
     ...tailwindConfig,
   };
 
-  // If no content or purge options are provided use the default
-  // We're returning purge for now to support older versions.
-  // ToDo: change to 'content' when we drop support for v2.
   if (!config.purge && !config.content) {
     return {
-      purge: [
+      content: [
         `${inputDir}/**/*.html`,
         `${inputDir}/**/*.js`,
         `${inputDir}/**/*.ts`,
