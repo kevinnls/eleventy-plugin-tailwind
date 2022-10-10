@@ -147,11 +147,13 @@ const tailwindPlugin = async (eleventyConfig, options = {}) => {
     if (
       changedFiles.find((file) => isEntry(file) || isDep(file) || isPurge(file))
     ) {
+      console.log("recompiling tailwind");
       compileTailwind(options);
     }
   });
 
   // Compile on init
+  console.log("building initial Tailwind");
   compileTailwind(options);
 };
 
