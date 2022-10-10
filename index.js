@@ -2,7 +2,7 @@ const tailwindcss = require("tailwindcss");
 const atImport = require("postcss-import");
 const postcss = require("postcss");
 const CleanCSS = require("clean-css");
-const minimatch = require("minimatch")
+const minimatch = require("minimatch");
 require("css.escape");
 const path = require("path");
 const { readFileSync, outputFileSync, existsSync } = require("fs-extra");
@@ -10,10 +10,7 @@ const CSSErrorOverlay = require("./errorOverlay");
 
 let CSSDeps = [];
 let tailwindConfigFile = {};
-const file = path.join(
-  process.cwd(),
-  "./tailwind.config.js"
-);
+const file = path.join(process.cwd(), "./tailwind.config.js");
 
 if (existsSync(file)) {
   tailwindConfigFile = require(file);
@@ -34,17 +31,17 @@ const minifyCSS = (css) => {
 };
 
 const getTailwindConfig = ({ inputDir, tailwindConfig = {} }) => {
-  const config = ({
-    mode: 'jit',
+  const config = {
+    mode: "jit",
     ...tailwindConfigFile,
     ...tailwindConfig,
-  });
+  };
 
   // If no content or purge options are provided use the default
   // We're returning purge for now to support older versions.
   // ToDo: change to 'content' when we drop support for v2.
-  if(!config.purge && !config.content) { 
-    return { 
+  if (!config.purge && !config.content) {
+    return {
       purge: [
         `${inputDir}/**/*.html`,
         `${inputDir}/**/*.js`,
@@ -58,25 +55,23 @@ const getTailwindConfig = ({ inputDir, tailwindConfig = {} }) => {
         `${inputDir}/**/*.hbs`,
         `${inputDir}/**/*.liquid`,
       ],
-      ...config 
-    }
+      ...config,
+    };
   }
 
   return config;
-}
+};
 
 // Add a function to add new @imports found when compiling CSS
 const trackCSSDeps = (newCSSDeps) => {
   newCSSDeps
-    .filter(dep => !CSSDeps.includes(dep))
-    .forEach(dep => {
+    .filter((dep) => !CSSDeps.includes(dep))
+    .forEach((dep) => {
       CSSDeps = [...CSSDeps, pathRel(dep)];
-    })
-}
-
+    });
+};
 
 const compileTailwind = async (options) => {
-
   const tailwindConfig = getTailwindConfig(options);
   let result;
 
@@ -92,11 +87,13 @@ const compileTailwind = async (options) => {
     });
 
     const imports = result.messages
-      .filter(message => (message.type === 'dependency' && message.plugin === 'postcss-import'))
-      .map(imp => imp.file);
+      .filter(
+        (message) =>
+          message.type === "dependency" && message.plugin === "postcss-import"
+      )
+      .map((imp) => imp.file);
 
     trackCSSDeps(imports);
-
   } catch (error) {
     result = {
       error: error.message,
@@ -113,11 +110,9 @@ const compileTailwind = async (options) => {
   } else {
     outputFileSync(options.output, minifyCSS(result.css));
   }
-
 };
 
 const tailwindPlugin = async (eleventyConfig, options = {}) => {
-
   if (!options.entry) {
     console.log(`No tailwind entry found.`);
     console.log(
@@ -134,20 +129,19 @@ const tailwindPlugin = async (eleventyConfig, options = {}) => {
     return;
   }
 
-
   // Add the entry to the watch list
   eleventyConfig.addWatchTarget(options.entry);
 
   eleventyConfig.on("eleventy.beforeWatch", (changedFiles) => {
-
     const tailwindConfig = getTailwindConfig(options);
     const purgeOptions = tailwindConfig.purge || tailwindConfig.content || [];
     // We're doing a lot of work here to make sure that we are not re-compiling CSS unless the changes files include:
     // CSS, CSS dependencies, or purge enteries from the tailwind config.
     // For future consideration: Tailwind v3+ with JIT is probably fast enough that there would be minimal cost to re-compiling everytime...?
-    const isEntry = (file) => pathRel(file) == pathRel(options.entry)
-    const isDep = (file) => CSSDeps.includes(pathRel(file))
-    const isPurge = (file) => purgeOptions.some(glob => minimatch(pathRel(file), glob))
+    const isEntry = (file) => pathRel(file) == pathRel(options.entry);
+    const isDep = (file) => CSSDeps.includes(pathRel(file));
+    const isPurge = (file) =>
+      purgeOptions.some((glob) => minimatch(pathRel(file), glob));
 
     // Recompile before --watch or --serve re-runs
     if (
@@ -156,7 +150,7 @@ const tailwindPlugin = async (eleventyConfig, options = {}) => {
       compileTailwind(options);
     }
   });
-  
+
   // Compile on init
   compileTailwind(options);
 };
