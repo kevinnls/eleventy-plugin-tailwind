@@ -133,23 +133,9 @@ const tailwindPlugin = async (eleventyConfig, options = {}) => {
   eleventyConfig.addWatchTarget(options.entry);
 
   eleventyConfig.on("eleventy.beforeWatch", (changedFiles) => {
-    const tailwindConfig = getTailwindConfig(options);
-    const purgeOptions = tailwindConfig.purge || tailwindConfig.content || [];
-    // We're doing a lot of work here to make sure that we are not re-compiling CSS unless the changes files include:
-    // CSS, CSS dependencies, or purge enteries from the tailwind config.
-    // For future consideration: Tailwind v3+ with JIT is probably fast enough that there would be minimal cost to re-compiling everytime...?
-    const isEntry = (file) => pathRel(file) == pathRel(options.entry);
-    const isDep = (file) => CSSDeps.includes(pathRel(file));
-    const isPurge = (file) =>
-      purgeOptions.some((glob) => minimatch(pathRel(file), glob));
-
     // Recompile before --watch or --serve re-runs
-    if (
-      changedFiles.find((file) => isEntry(file) || isDep(file) || isPurge(file))
-    ) {
-      console.log("recompiling tailwind");
-      compileTailwind(options);
-    }
+    console.log("recompiling tailwind");
+    compileTailwind(options);
   });
 
   // Compile on init
